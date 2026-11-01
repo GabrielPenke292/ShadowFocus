@@ -1,0 +1,19 @@
+Penke Language - Chrome Extension
+ 
+O que é?
+Uma extensão que pode ser instalada no google chrome (posteriormente em outros navegadores)
+que o usuário cola uma url de um vídeo do youtube e abre uma aba com a tela toda preta e aparece o texto em tempo real enquanto o vídeo é tocado.  
+Funciona a princípio com duas opções:
+ - Tela apenas com a transcrição em tempo real de vídeos em inglês
+ - Ou com  a tradução simultânea para português BR logo abaixo
+
+A transcrição fica centralizada horizontalmente (na medida do possível) e verticalmente.
+
+Existem 2 tipos de visualização:
+ - o texto vai aparecendo em tempo real sincronizado com o vídeo
+ - o texto aparece em blocos maiores que exibem uma parte do que foi dito antes e uma parte do que será dito.
+
+Features: 
+ - Botão de play que starta o vídeo (áudio dele) e o texto transcrito
+ - Botão de pause que pausa ambos.
+ - Botão de restart que reinicia ambos

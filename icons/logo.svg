@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="512" height="512">
+  <title>ShadowFocus</title>
+  <rect width="128" height="128" rx="28" fill="#0d0d0d"/>
+  <g fill="none" stroke="#4fb3ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 36V16h20M92 16h20v20M112 92v20H92M36 112H16V92"/>
+  </g>
+  <g fill="#4fb3ff" transform="translate(5 5)">
+    <rect x="22.5" y="48" width="10" height="26" rx="5"/>
+    <rect x="39.5" y="36" width="10" height="50" rx="5"/>
+    <rect x="56.5" y="27" width="10" height="68" rx="5"/>
+    <rect x="73.5" y="41" width="10" height="40" rx="5"/>
+    <rect x="90.5" y="50" width="10" height="22" rx="5"/>
+  </g>
+  <g fill="#f5f5f5">
+    <rect x="22.5" y="48" width="10" height="26" rx="5"/>
+    <rect x="39.5" y="36" width="10" height="50" rx="5"/>
+    <rect x="56.5" y="27" width="10" height="68" rx="5"/>
+    <rect x="73.5" y="41" width="10" height="40" rx="5"/>
+    <rect x="90.5" y="50" width="10" height="22" rx="5"/>
+  </g>
+</svg>

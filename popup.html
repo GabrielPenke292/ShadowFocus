@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>ShadowFocus</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <h1><img src="icons/icon48.png" alt="" /> ShadowFocus</h1>
+
+    <form id="form">
+      <label class="field">
+        <span>URL do vídeo do YouTube</span>
+        <input id="url" type="text" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" />
+      </label>
+      <p id="error" class="error" hidden></p>
+
+      <fieldset>
+        <legend>Exibição</legend>
+        <label><input type="radio" name="translate" value="0" checked /> Só transcrição (inglês)</label>
+        <label><input type="radio" name="translate" value="1" /> Transcrição + tradução (PT-BR)</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Visualização</legend>
+        <label><input type="radio" name="mode" value="live" checked /> Tempo real (palavra por palavra)</label>
+        <label><input type="radio" name="mode" value="blocks" /> Blocos (antes e depois)</label>
+      </fieldset>
+
+      <button type="submit">Abrir</button>
+    </form>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

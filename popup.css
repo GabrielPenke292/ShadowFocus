@@ -1,0 +1,109 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b0b0b;
+  --fg: #f2f2f2;
+  --muted: #9a9a9a;
+  --accent: #4fb3ff;
+  --border: #2a2a2a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 340px;
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+h1 {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+h1 img {
+  width: 28px;
+  height: 28px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+input[type='text'] {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #151515;
+  color: var(--fg);
+  font: inherit;
+}
+
+input[type='text']:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+fieldset {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+legend {
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+fieldset label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+}
+
+input[type='radio'] {
+  accent-color: var(--accent);
+}
+
+button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #000;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
+
+.error {
+  margin: 6px 0 0;
+  color: #ff6b6b;
+  font-size: 12px;
+}

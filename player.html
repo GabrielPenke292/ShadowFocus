@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>ShadowFocus</title>
+    <link rel="icon" type="image/png" href="icons/icon32.png?v=2" />
+    <link rel="stylesheet" href="player.css" />
+  </head>
+  <body>
+    <main id="stage">
+      <div id="status"></div>
+      <div id="live" class="live" hidden></div>
+      <div id="blocks" class="blocks" hidden></div>
+
+      <div id="fallback" hidden>
+        <label class="file-btn">
+          Carregar legenda (.srt / .vtt)
+          <input id="file" type="file" accept=".srt,.vtt,text/vtt" />
+        </label>
+      </div>
+    </main>
+
+    <aside id="video-panel">
+      <div class="video-bar">
+        <span>Vídeo</span>
+        <button id="video-minimize" title="Minimizar vídeo (V)" aria-label="Minimizar vídeo">—</button>
+      </div>
+      <div id="video-wrap"></div>
+    </aside>
+    <button id="video-restore" title="Mostrar vídeo (V)" hidden>▣ Mostrar vídeo</button>
+
+    <footer id="controls">
+      <input id="seek" type="range" min="0" max="0" step="0.1" value="0" aria-label="Posição" />
+      <div class="row">
+        <div class="group">
+          <button id="restart" title="Reiniciar (R)" disabled>⟲ Reiniciar</button>
+          <button id="play" class="primary" title="Play (Espaço)" disabled>▶ Play</button>
+          <button id="pause" title="Pausar (Espaço)" disabled>⏸ Pausar</button>
+          <div class="speed" role="group" aria-label="Velocidade">
+            <button id="speed-down" title="Diminuir velocidade (<)">−</button>
+            <button id="speed-reset" class="speed-label" title="Velocidade normal">1×</button>
+            <button id="speed-up" title="Aumentar velocidade (>)">+</button>
+          </div>
+          <div class="volume">
+            <button id="mute" title="Mudo" aria-label="Mudo">🔊</button>
+            <input id="volume" type="range" min="0" max="100" step="1" value="100" aria-label="Volume" />
+          </div>
+          <span id="time" class="time">0:00 / 0:00</span>
+        </div>
+        <div class="group">
+          <span id="tr-status" class="muted"></span>
+          <button id="toggle-translate" class="toggle" title="Tradução (T)">Tradução PT-BR</button>
+          <button id="toggle-mode" class="toggle" title="Visualização (M)">Tempo real</button>
+          <button id="font-down" title="Diminuir texto (-)">A−</button>
+          <button id="font-up" title="Aumentar texto (+)">A+</button>
+          <button id="toggle-video" class="toggle" title="Mostrar/minimizar vídeo (V)">Vídeo</button>
+          <button id="toggle-fullscreen" class="toggle" title="Tela cheia (F)">⛶ Tela cheia</button>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="player.js"></script>
+  </body>
+</html>
