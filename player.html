@@ -49,7 +49,10 @@
         </div>
         <div class="group">
           <span id="tr-status" class="muted"></span>
-          <button id="toggle-translate" class="toggle" title="Tradução (T)">Tradução PT-BR</button>
+          <div class="menu-wrap">
+            <button id="toggle-translate" class="toggle" title="Idioma da tradução (T liga/desliga)" aria-haspopup="menu" aria-expanded="false">Tradução</button>
+            <div id="translate-menu" class="menu" role="menu" aria-label="Idioma da tradução" hidden></div>
+          </div>
           <button id="toggle-mode" class="toggle" title="Visualização (M)">Tempo real</button>
           <button id="font-down" title="Diminuir texto (-)">A−</button>
           <button id="font-up" title="Aumentar texto (+)">A+</button>

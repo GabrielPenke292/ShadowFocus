@@ -213,6 +213,48 @@ body.idle #video-restore {
   opacity: 0;
 }
 
+/* ---- Menu de tradução ---- */
+
+.menu-wrap {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 3;
+  display: grid;
+  min-width: 190px;
+  padding: 6px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #151515;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.6);
+}
+
+#controls .menu button {
+  padding: 8px 10px 8px 30px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+}
+
+#controls .menu button:hover {
+  background: #222;
+}
+
+#controls .menu button.checked {
+  color: var(--accent);
+}
+
+#controls .menu button.checked::before {
+  content: '✓';
+  position: absolute;
+  margin-left: -20px;
+}
+
 /* ---- Volume ---- */
 
 .volume {

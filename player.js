@@ -19,12 +19,21 @@ const EMBED_ERRORS = {
   153: 'O YouTube recusou o player embutido (erro 153).',
 };
 
+const LANGUAGES = {
+  pt: { name: 'Português (BR)', short: 'PT-BR' },
+  en: { name: 'Inglês', short: 'EN' },
+  es: { name: 'Espanhol', short: 'ES' },
+};
+
 const state = {
   track: null,
   chunks: [],
   mode: params.get('mode') === 'blocks' ? 'blocks' : 'live',
   translate: params.get('tr') === '1',
-  translationJob: null,
+  source: null, // idioma do vídeo; null para arquivo de legenda (desconhecido)
+  target: 'pt',
+  translationJobs: {}, // por idioma de destino
+  translationStatus: {}, // 'loading' | 'done' | 'error'
   translationVersion: 0,
   renderedKey: null,
   wordEls: [],
@@ -92,18 +101,30 @@ function escapeHtml(s) {
 
 function showIdle() {
   const title = state.track?.title ? `<h1>${escapeHtml(state.track.title)}</h1>` : '';
-  const note = state.track?.isAuto ? '<br><small>Legendas geradas automaticamente pelo YouTube.</small>' : '';
+  const notes = [];
+  if (state.source) notes.push(`Idioma do vídeo: ${LANGUAGES[state.source].name}.`);
+  if (state.track?.isAuto) notes.push('Legendas geradas automaticamente pelo YouTube.');
+  const note = notes.length ? `<br><small>${notes.join(' ')}</small>` : '';
   showStatus(`${title}Pressione <b>▶ Play</b> para começar.${note}`);
 }
 
 // ---------- Transcrição ----------
 
-function setCues(cues) {
+// Idiomas de tradução disponíveis: todos menos o idioma do vídeo.
+function targetOptions() {
+  return Object.keys(LANGUAGES).filter((lang) => lang !== state.source);
+}
+
+function setCues(cues, source) {
   state.chunks = buildChunks(buildWords(cues));
   if (!state.chunks.length) throw new Error('A legenda está vazia.');
 
-  state.translationJob = null;
+  state.source = source;
+  if (!targetOptions().includes(state.target)) state.target = 'pt';
+  state.translationJobs = {};
+  state.translationStatus = {};
   state.translationVersion++;
+  updateToggles();
   state.renderedKey = null;
   $('fallback').hidden = true;
   for (const id of ['play', 'pause', 'restart']) $(id).disabled = false;
@@ -115,46 +136,58 @@ function setCues(cues) {
   }
 }
 
-function startTranslation() {
-  if (state.translationJob || !state.chunks.length) return;
-  const chunks = state.chunks;
-  $('tr-status').textContent = 'Traduzindo…';
+function updateTrStatus() {
+  const status = state.translate ? state.translationStatus[state.target] : null;
+  $('tr-status').textContent =
+    status === 'loading' ? 'Traduzindo…' : status === 'error' ? 'Falha na tradução' : '';
+}
 
-  state.translationJob = (async () => {
+function startTranslation(target = state.target) {
+  if (state.translationJobs[target] || !state.chunks.length) return;
+  const chunks = state.chunks;
+  const setStatus = (status) => {
+    state.translationStatus[target] = status;
+    updateTrStatus();
+  };
+  setStatus('loading');
+
+  state.translationJobs[target] = (async () => {
     try {
       await translateLines(
         chunks.map((c) => c.text),
         {
+          sl: state.source || 'auto',
+          tl: target,
           onBatch(offset, out) {
-            out.forEach((t, i) => (chunks[offset + i].translation = t));
+            out.forEach((t, i) => (chunks[offset + i].translations[target] = t));
             state.translationVersion++;
           },
         }
       );
-      $('tr-status').textContent = '';
+      setStatus('done');
     } catch {
       try {
-        await translateFromYouTube(chunks);
-        $('tr-status').textContent = '';
+        await translateFromYouTube(chunks, target);
+        setStatus('done');
       } catch {
-        $('tr-status').textContent = 'Falha na tradução';
-        state.translationJob = null;
+        setStatus('error');
+        delete state.translationJobs[target];
       }
     }
   })();
 }
 
 // Alternativa: tradução automática do próprio YouTube, alinhada por tempo.
-async function translateFromYouTube(chunks) {
+async function translateFromYouTube(chunks, target) {
   if (!state.track?.baseUrl) throw new Error('sem faixa do YouTube');
-  const cues = await fetchTrackCues(state.track.baseUrl, 'pt');
+  const cues = await fetchTrackCues(state.track.baseUrl, target);
   if (!cues.length) throw new Error('sem tradução');
   for (const chunk of chunks) {
     const texts = cues
       .filter((c) => c.start >= chunk.start - 0.3 && c.start < chunk.end)
       .map((c) => c.segs.map((s) => s.text).join('').trim())
       .filter(Boolean);
-    chunk.translation = [...new Set(texts)].join(' ');
+    chunk.translations[target] = [...new Set(texts)].join(' ');
   }
   state.translationVersion++;
 }
@@ -178,7 +211,8 @@ function wordSpans(chunk) {
 function translationEl(chunk) {
   const tr = document.createElement('div');
   tr.className = 'tr';
-  tr.textContent = chunk.translation || '';
+  tr.lang = state.target;
+  tr.textContent = chunk.translations[state.target] || '';
   return tr;
 }
 
@@ -188,7 +222,7 @@ function renderLive(t, idx) {
   const visible = chunk && t <= chunk.end + LIVE_HOLD;
   el.classList.toggle('fade', !visible);
 
-  const key = `live:${idx}:${state.translate}:${state.translationVersion}`;
+  const key = `live:${idx}:${state.translate}:${state.target}:${state.translationVersion}`;
   if (key === state.renderedKey || !chunk) return;
   state.renderedKey = key;
   state.wordEls = [];
@@ -198,7 +232,7 @@ function renderLive(t, idx) {
 
 function renderBlocks(idx) {
   const center = Math.max(idx, 0);
-  const key = `blocks:${idx}:${state.translate}:${state.translationVersion}`;
+  const key = `blocks:${idx}:${state.translate}:${state.target}:${state.translationVersion}`;
   if (key === state.renderedKey) return;
   state.renderedKey = key;
   state.wordEls = [];
@@ -262,7 +296,9 @@ function updateButtons() {
 }
 
 function updateToggles() {
-  $('toggle-translate').classList.toggle('on', state.translate);
+  const trButton = $('toggle-translate');
+  trButton.classList.toggle('on', state.translate);
+  trButton.textContent = `Tradução: ${state.translate ? LANGUAGES[state.target].short : 'desligada'} ▾`;
   $('toggle-mode').textContent = state.mode === 'live' ? 'Tempo real' : 'Blocos';
   $('toggle-video').classList.toggle('on', !$('video-panel').classList.contains('minimized'));
 }
@@ -334,8 +370,49 @@ function setTranslate(on) {
   state.translate = on;
   state.renderedKey = null;
   if (on) startTranslation();
-  else $('tr-status').textContent = '';
+  updateTrStatus();
   updateToggles();
+}
+
+function setTarget(target) {
+  state.target = target;
+  try {
+    localStorage.setItem('shadowfocus.target', target);
+  } catch {
+    // armazenamento indisponível
+  }
+  setTranslate(true);
+}
+
+// ---------- Menu de tradução ----------
+
+function openTranslateMenu() {
+  const menu = $('translate-menu');
+  const items = [{ value: null, label: 'Desligada' }].concat(
+    targetOptions().map((lang) => ({ value: lang, label: LANGUAGES[lang].name }))
+  );
+  menu.replaceChildren(
+    ...items.map(({ value, label }) => {
+      const item = document.createElement('button');
+      item.role = 'menuitemradio';
+      const checked = value ? state.translate && state.target === value : !state.translate;
+      item.ariaChecked = String(checked);
+      item.classList.toggle('checked', checked);
+      item.textContent = label;
+      item.addEventListener('click', () => {
+        closeTranslateMenu();
+        value ? setTarget(value) : setTranslate(false);
+      });
+      return item;
+    })
+  );
+  menu.hidden = false;
+  $('toggle-translate').ariaExpanded = 'true';
+}
+
+function closeTranslateMenu() {
+  $('translate-menu').hidden = true;
+  $('toggle-translate').ariaExpanded = 'false';
 }
 
 function setMode(mode) {
@@ -392,7 +469,13 @@ function bindControls() {
   $('play').addEventListener('click', play);
   $('pause').addEventListener('click', pause);
   $('restart').addEventListener('click', restart);
-  $('toggle-translate').addEventListener('click', () => setTranslate(!state.translate));
+  $('toggle-translate').addEventListener('click', (e) => {
+    e.stopPropagation();
+    $('translate-menu').hidden ? openTranslateMenu() : closeTranslateMenu();
+  });
+  document.addEventListener('click', (e) => {
+    if (!$('translate-menu').contains(e.target)) closeTranslateMenu();
+  });
   $('toggle-mode').addEventListener('click', () => setMode(state.mode === 'live' ? 'blocks' : 'live'));
   $('font-up').addEventListener('click', () => setFontSize(state.fontSize + 4));
   $('font-down').addEventListener('click', () => setFontSize(state.fontSize - 4));
@@ -430,7 +513,7 @@ function bindControls() {
     try {
       const cues = parseSubtitleFile(await file.text());
       state.track = { title: file.name };
-      setCues(cues);
+      setCues(cues, null);
     } catch (err) {
       showStatus(escapeHtml(err.message || 'Arquivo de legenda inválido.'));
     }
@@ -453,6 +536,7 @@ function bindControls() {
       '-': () => setFontSize(state.fontSize - 4),
       ArrowLeft: () => seekBy(-5),
       ArrowRight: () => seekBy(5),
+      Escape: closeTranslateMenu,
       ArrowUp: () => changeVolume(5),
       ArrowDown: () => changeVolume(-5),
     };
@@ -480,6 +564,8 @@ async function init() {
   try {
     const size = parseInt(localStorage.getItem('shadowfocus.fontSize'), 10);
     if (size) state.fontSize = size;
+    const target = localStorage.getItem('shadowfocus.target');
+    if (LANGUAGES[target]) state.target = target;
   } catch {
     // armazenamento indisponível
   }
@@ -516,7 +602,7 @@ async function init() {
   try {
     state.track = await loadTranscript(videoId);
     if (state.track.title) document.title = `${state.track.title} · ShadowFocus`;
-    setCues(state.track.cues);
+    setCues(state.track.cues, state.track.language);
   } catch (err) {
     showStatus(
       `${escapeHtml(err.message)}<br><small>Você pode carregar um arquivo de legenda deste vídeo manualmente.</small>`

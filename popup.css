@@ -81,6 +81,12 @@ fieldset label {
   cursor: pointer;
 }
 
+.hint {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 input[type='radio'] {
   accent-color: var(--accent);
 }
